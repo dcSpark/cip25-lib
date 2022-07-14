@@ -1,0 +1,5 @@
+core/target/**
+wasm/target/**
+core/Cargo.lock
+wasm/Cargo.lock
+
