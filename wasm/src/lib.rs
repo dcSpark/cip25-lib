@@ -15,11 +15,11 @@ type PolicyId = Vec<u8>;
 #[wasm_bindgen]
 
 #[derive(Clone, Debug)]
-pub struct MapAssetNameToU64(LinkedHashMap<AssetName, u64>);
+pub struct MapAssetNameToMetadataDetails(LinkedHashMap<AssetName, core::MetadataDetails>);
 
 #[wasm_bindgen]
 
-impl MapAssetNameToU64 {
+impl MapAssetNameToMetadataDetails {
     pub fn new() -> Self {
         Self(LinkedHashMap::new())
     }
@@ -28,12 +28,12 @@ impl MapAssetNameToU64 {
         self.0.len()
     }
 
-    pub fn insert(&mut self, key: AssetName, value: u64) -> Option<u64> {
-        self.0.insert(key, value)
+    pub fn insert(&mut self, key: AssetName, value: &MetadataDetails) -> Option<MetadataDetails> {
+        self.0.insert(key, value.clone().into()).map(|v| v.clone().into())
     }
 
-    pub fn get(&self, key: AssetName) -> Option<u64> {
-        self.0.get(&key).copied()
+    pub fn get(&self, key: AssetName) -> Option<MetadataDetails> {
+        self.0.get(&key).map(|v| v.clone().into())
     }
 
     pub fn keys(&self) -> AssetNames {
@@ -41,14 +41,14 @@ impl MapAssetNameToU64 {
     }
 }
 
-impl From<LinkedHashMap<AssetName, u64>> for MapAssetNameToU64 {
-    fn from(native: LinkedHashMap<AssetName, u64>) -> Self {
+impl From<LinkedHashMap<AssetName, core::MetadataDetails>> for MapAssetNameToMetadataDetails {
+    fn from(native: LinkedHashMap<AssetName, core::MetadataDetails>) -> Self {
         Self(native)
     }
 }
 
-impl std::convert::Into<LinkedHashMap<AssetName, u64>> for MapAssetNameToU64 {
-    fn into(self) -> LinkedHashMap<AssetName, u64> {
+impl std::convert::Into<LinkedHashMap<AssetName, core::MetadataDetails>> for MapAssetNameToMetadataDetails {
+    fn into(self) -> LinkedHashMap<AssetName, core::MetadataDetails> {
         self.0
     }
 }
@@ -92,47 +92,6 @@ impl std::convert::Into<Vec<AssetName>> for AssetNames {
 
 #[wasm_bindgen]
 
-#[derive(Clone, Debug)]
-pub struct Data(LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>>);
-
-#[wasm_bindgen]
-
-impl Data {
-    pub fn new() -> Self {
-        Self(LinkedHashMap::new())
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn insert(&mut self, key: PolicyId, value: &MapAssetNameToU64) -> Option<MapAssetNameToU64> {
-        self.0.insert(key, value.clone().into()).map(|v| v.clone().into())
-    }
-
-    pub fn get(&self, key: PolicyId) -> Option<MapAssetNameToU64> {
-        self.0.get(&key).map(|v| v.clone().into())
-    }
-
-    pub fn keys(&self) -> PolicyIds {
-        PolicyIds(self.0.iter().map(|(k, _v)| k.clone()).collect::<Vec<_>>())
-    }
-}
-
-impl From<LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>>> for Data {
-    fn from(native: LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>>) -> Self {
-        Self(native)
-    }
-}
-
-impl std::convert::Into<LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>>> for Data {
-    fn into(self) -> LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>> {
-        self.0
-    }
-}
-
-#[wasm_bindgen]
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct String64s(Vec<core::String64>);
 
@@ -164,6 +123,84 @@ impl From<Vec<core::String64>> for String64s {
 
 impl std::convert::Into<Vec<core::String64>> for String64s {
     fn into(self) -> Vec<core::String64> {
+        self.0
+    }
+}
+
+#[wasm_bindgen]
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FilesDetailss(Vec<core::FilesDetails>);
+
+#[wasm_bindgen]
+
+impl FilesDetailss {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn get(&self, index: usize) -> FilesDetails {
+        self.0[index].clone().into()
+    }
+
+    pub fn add(&mut self, elem: &FilesDetails) {
+        self.0.push(elem.clone().into());
+    }
+}
+
+impl From<Vec<core::FilesDetails>> for FilesDetailss {
+    fn from(native: Vec<core::FilesDetails>) -> Self {
+        Self(native)
+    }
+}
+
+impl std::convert::Into<Vec<core::FilesDetails>> for FilesDetailss {
+    fn into(self) -> Vec<core::FilesDetails> {
+        self.0
+    }
+}
+
+#[wasm_bindgen]
+
+#[derive(Clone, Debug)]
+pub struct Data(LinkedHashMap<PolicyId, LinkedHashMap<AssetName, core::MetadataDetails>>);
+
+#[wasm_bindgen]
+
+impl Data {
+    pub fn new() -> Self {
+        Self(LinkedHashMap::new())
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn insert(&mut self, key: PolicyId, value: &MapAssetNameToMetadataDetails) -> Option<MapAssetNameToMetadataDetails> {
+        self.0.insert(key, value.clone().into()).map(|v| v.clone().into())
+    }
+
+    pub fn get(&self, key: PolicyId) -> Option<MapAssetNameToMetadataDetails> {
+        self.0.get(&key).map(|v| v.clone().into())
+    }
+
+    pub fn keys(&self) -> PolicyIds {
+        PolicyIds(self.0.iter().map(|(k, _v)| k.clone()).collect::<Vec<_>>())
+    }
+}
+
+impl From<LinkedHashMap<PolicyId, LinkedHashMap<AssetName, core::MetadataDetails>>> for Data {
+    fn from(native: LinkedHashMap<PolicyId, LinkedHashMap<AssetName, core::MetadataDetails>>) -> Self {
+        Self(native)
+    }
+}
+
+impl std::convert::Into<LinkedHashMap<PolicyId, LinkedHashMap<AssetName, core::MetadataDetails>>> for Data {
+    fn into(self) -> LinkedHashMap<PolicyId, LinkedHashMap<AssetName, core::MetadataDetails>> {
         self.0
     }
 }
@@ -297,43 +334,6 @@ impl From<core::Metadata> for Metadata {
 impl From<Metadata> for core::Metadata {
     fn from(wasm: Metadata) -> Self {
         wasm.0
-    }
-}
-
-#[wasm_bindgen]
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FilesDetailss(Vec<core::FilesDetails>);
-
-#[wasm_bindgen]
-
-impl FilesDetailss {
-    pub fn new() -> Self {
-        Self(Vec::new())
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    pub fn get(&self, index: usize) -> FilesDetails {
-        self.0[index].clone().into()
-    }
-
-    pub fn add(&mut self, elem: &FilesDetails) {
-        self.0.push(elem.clone().into());
-    }
-}
-
-impl From<Vec<core::FilesDetails>> for FilesDetailss {
-    fn from(native: Vec<core::FilesDetails>) -> Self {
-        Self(native)
-    }
-}
-
-impl std::convert::Into<Vec<core::FilesDetails>> for FilesDetailss {
-    fn into(self) -> Vec<core::FilesDetails> {
-        self.0
     }
 }
 

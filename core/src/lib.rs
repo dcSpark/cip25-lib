@@ -24,7 +24,7 @@ use linked_hash_map::LinkedHashMap;
 
 type AssetName = Vec<u8>;
 
-type Data = LinkedHashMap<PolicyId, LinkedHashMap<AssetName, u64>>;
+type Data = LinkedHashMap<PolicyId, LinkedHashMap<AssetName, MetadataDetails>>;
 
 type PolicyId = Vec<u8>;
 
@@ -62,7 +62,7 @@ pub struct LabelMetadata {
     pub data: Data,
     data_encoding: LenEncoding,
     data_key_encodings: BTreeMap<Vec<u8>, StringEncoding>,
-    data_value_encodings: BTreeMap<Vec<u8>, (LenEncoding, BTreeMap<Vec<u8>, StringEncoding>, BTreeMap<Vec<u8>, Option<cbor_event::Sz>>)>,
+    data_value_encodings: BTreeMap<Vec<u8>, (LenEncoding, BTreeMap<Vec<u8>, StringEncoding>)>,
     data_key_encoding: StringEncoding,
     version_encoding: Option<cbor_event::Sz>,
     version_key_encoding: StringEncoding,

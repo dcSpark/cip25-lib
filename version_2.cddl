@@ -1,7 +1,6 @@
 string64 = text .size (0..64)
 
 policy_id = bytes ; no longer in text
-
 asset_name = bytes ; no longer in text and utf-8
 
 files_details = 
@@ -14,14 +13,14 @@ files_details =
 metadata_details = 
   {
     name : string64,
-    image : string64 / [* string64],
+    image : string64 / [* string64], 
     ? mediaType : string64,
     ? description : string64 / [* string64],
     ? files : [* files_details]
   }
 
 ;label_metadata = { data: policy_id => { * asset_name => metadata_details }, version: 2 } ; version 2
-data = { * policy_id => { * asset_name => uint } }
+data = { * policy_id => { * asset_name => metadata_details } }
 label_metadata = { data: data, version: 2 } ; version 2
 
 metadata = { 721 : label_metadata }

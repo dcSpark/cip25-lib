@@ -354,7 +354,7 @@ impl Serialize for LabelMetadata {
                     }
                     for (key_bytes, key, value) in key_order {
                         serializer.write_raw_bytes(&key_bytes)?;
-                        let (data_value_encoding, data_value_key_encodings, data_value_value_encodings) = self.data_value_encodings.get(key).map(|e| e.clone()).unwrap_or_else(|| (LenEncoding::default(), BTreeMap::new(), BTreeMap::new()));
+                        let (data_value_encoding, data_value_key_encodings) = self.data_value_encodings.get(key).map(|e| e.clone()).unwrap_or_else(|| (LenEncoding::default(), BTreeMap::new()));
                         serializer.write_map_sz(data_value_encoding.to_len_sz(value.len() as u64, force_canonical))?;
                         let mut key_order = value.iter().map(|(k, v)| {
                             let mut buf = cbor_event::se::Serializer::new_vec();
@@ -372,8 +372,7 @@ impl Serialize for LabelMetadata {
                         }
                         for (key_bytes, key, value) in key_order {
                             serializer.write_raw_bytes(&key_bytes)?;
-                            let data_value_value_encoding = data_value_value_encodings.get(key).map(|e| e.clone()).unwrap_or_else(|| None);
-                            serializer.write_unsigned_integer_sz(*value, fit_sz(*value, data_value_value_encoding, force_canonical))?;
+                            value.serialize(serializer, force_canonical)?;
                         }
                         data_value_encoding.end(serializer, force_canonical)?;
                     }
@@ -435,26 +434,24 @@ impl Deserialize for LabelMetadata {
                                         let data_value_len = raw.map_sz()?;
                                         let data_value_encoding = data_value_len.into();
                                         let mut data_value_key_encodings = BTreeMap::new();
-                                        let mut data_value_value_encodings = BTreeMap::new();
                                         while match data_value_len { cbor_event::LenSz::Len(n, _) => data_value_table.len() < n as usize, cbor_event::LenSz::Indefinite => true, } {
                                             if raw.cbor_type()? == CBORType::Special {
                                                 assert_eq!(raw.special()?, CBORSpecial::Break);
                                                 break;
                                             }
                                             let (data_value_key, data_value_key_encoding) = raw.bytes_sz().map(|(bytes, enc)| (bytes, StringEncoding::from(enc)))?;
-                                            let (data_value_value, data_value_value_encoding) = raw.unsigned_integer_sz().map(|(x, enc)| (x, Some(enc)))?;
+                                            let data_value_value = MetadataDetails::deserialize(raw)?;
                                             if data_value_table.insert(data_value_key.clone(), data_value_value).is_some() {
                                                 return Err(DeserializeFailure::DuplicateKey(Key::Str(String::from("some complicated/unsupported type"))).into());
                                             }
                                             data_value_key_encodings.insert(data_value_key.clone(), data_value_key_encoding);
-                                            data_value_value_encodings.insert(data_value_key.clone(), data_value_value_encoding);
                                         }
-                                        let (data_value, data_value_encoding, data_value_key_encodings, data_value_value_encodings) = (data_value_table, data_value_encoding, data_value_key_encodings, data_value_value_encodings);
+                                        let (data_value, data_value_encoding, data_value_key_encodings) = (data_value_table, data_value_encoding, data_value_key_encodings);
                                         if data_table.insert(data_key.clone(), data_value).is_some() {
                                             return Err(DeserializeFailure::DuplicateKey(Key::Str(String::from("some complicated/unsupported type"))).into());
                                         }
                                         data_key_encodings.insert(data_key.clone(), data_key_encoding);
-                                        data_value_encodings.insert(data_key.clone(), (data_value_encoding, data_value_key_encodings, data_value_value_encodings));
+                                        data_value_encodings.insert(data_key.clone(), (data_value_encoding, data_value_key_encodings));
                                     }
                                     Ok((data_table, data_encoding, data_key_encodings, data_value_encodings))
                                 })().map_err(|e| e.annotate("data"))?;
