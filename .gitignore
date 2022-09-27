@@ -1,5 +1,8 @@
-core/target/**
-wasm/target/**
-core/Cargo.lock
-wasm/Cargo.lock
-
+rust/core/target/**
+rust/wasm/target/**
+rust/core/Cargo.lock
+rust/wasm/Cargo.lock
+rust/json-gen/output/**
+rust/json-gen/schemas/**
+rust/json-gen/target/**
+node_modules/**
