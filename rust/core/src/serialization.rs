@@ -363,10 +363,7 @@ impl Deserialize for Metadata {
                                 Ok(LabelMetadata::deserialize(raw)?)
                             })().map_err(|e| e.annotate("key_721"))?);
                         },
-                        unknown_key => return Err(DeserializeFailure::UnknownKey(Key::Uint(unknown_key)).into()),
-                    },
-                    CBORType::Text => match raw.text()?.as_str() {
-                        unknown_key => return Err(DeserializeFailure::UnknownKey(Key::Str(unknown_key.to_owned())).into()),
+                        _unknown_key => /* we must be permissive as we are looking at a subset of metadata here */(),
                     },
                     CBORType::Special => match len {
                         cbor_event::Len::Len(_) => return Err(DeserializeFailure::BreakInDefiniteLen.into()),
@@ -375,7 +372,7 @@ impl Deserialize for Metadata {
                             _ => return Err(DeserializeFailure::EndingBreakMissing.into()),
                         },
                     },
-                    other_type => return Err(DeserializeFailure::UnexpectedKeyType(other_type).into()),
+                    _other_type => /* we must be permissive as we are looking at a subset of metadata here */(),
                 }
                 read += 1;
             }
